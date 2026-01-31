@@ -1,4 +1,5 @@
-﻿using ECommerce.OrderProcessing.Domain.Entities;
+﻿using ECommerce.OrderProcessing.Application.Interfaces;
+using ECommerce.OrderProcessing.Domain.Entities;
 using ECommerce.OrderProcessing.Domain.Enums;
 using ECommerce.OrderProcessing.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;

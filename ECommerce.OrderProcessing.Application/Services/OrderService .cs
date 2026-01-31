@@ -2,7 +2,6 @@
 using ECommerce.OrderProcessing.Application.Interfaces;
 using ECommerce.OrderProcessing.Domain.Entities;
 using ECommerce.OrderProcessing.Domain.Enums;
-using ECommerce.OrderProcessing.Infrastructure.Repositories;
 
 namespace ECommerce.OrderProcessing.Application.Services
 {

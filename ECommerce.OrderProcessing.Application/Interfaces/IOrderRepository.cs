@@ -1,7 +1,7 @@
 ﻿using ECommerce.OrderProcessing.Domain.Entities;
 using ECommerce.OrderProcessing.Domain.Enums;
 
-namespace ECommerce.OrderProcessing.Infrastructure.Repositories
+namespace ECommerce.OrderProcessing.Application.Interfaces
 {
     public interface IOrderRepository
     {
