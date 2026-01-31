@@ -1,5 +1,7 @@
-﻿using ECommerce.OrderProcessing.Application.DTOs;
+﻿using System.Diagnostics.Metrics;
+using ECommerce.OrderProcessing.Application.DTOs;
 using ECommerce.OrderProcessing.Application.Interfaces;
+using ECommerce.OrderProcessing.Application.Models;
 using ECommerce.OrderProcessing.Domain.Entities;
 using ECommerce.OrderProcessing.Domain.Enums;
 
@@ -8,10 +10,12 @@ namespace ECommerce.OrderProcessing.Application.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _repository;
+        private readonly IAuditLogService _auditLogService;
 
-        public OrderService(IOrderRepository repository)
+        public OrderService(IOrderRepository repository, IAuditLogService auditLogService)
         {
             _repository = repository;
+            _auditLogService = auditLogService;
         }
 
         public Task<Order> GetByIdAsync(long id)
@@ -56,6 +60,19 @@ namespace ECommerce.OrderProcessing.Application.Services
             if (order.Status != OrderStatus.Recebido)
                 throw new InvalidOperationException("Não é possível alterar um pedido já processado");
 
+            var before = new
+            {
+                order.Id,
+                order.Status,
+                order.TotalAmount,
+                Items = order.Items.Select(i => new
+                {
+                    i.ProductName,
+                    i.Quantity,
+                    i.UnitPrice
+                }).ToList()
+            };
+
             order.Items.Clear();
             order.Items = dto.Items.Select(i => new OrderItem
             {
@@ -67,16 +84,55 @@ namespace ECommerce.OrderProcessing.Application.Services
             order.TotalAmount = order.Items.Sum(i => i.UnitPrice * i.Quantity);
 
             await _repository.UpdateAsync(order);
+
+            var after = new
+            {
+                order.Id,
+                order.Status,
+                order.TotalAmount,
+                Items = order.Items.Select(i => new
+                {
+                    i.ProductName,
+                    i.Quantity,
+                    i.UnitPrice
+                }).ToList()
+            };
+
+            await _auditLogService.LogAsync(new OrderAuditLog
+            {
+                OrderId = order.Id,
+                Before = before,
+                After = after
+            });
         }
 
         public async Task CancelAsync(long id)
         {
             var order = await _repository.GetByIdAsync(id);
 
+            var before = new
+            {
+                order.Id,
+                order.Status,
+                order.TotalAmount,
+                Items = order.Items.Select(i => new
+                {
+                    i.ProductName,
+                    i.Quantity,
+                    i.UnitPrice
+                }).ToList()
+            };
+
             order.Status = OrderStatus.Cancelado;
             order.IsActive = false;
-
             await _repository.UpdateAsync(order);
+
+            await _auditLogService.LogAsync(new OrderAuditLog
+            {
+                Action = "SOFT DELETE",
+                OrderId = order.Id,
+                Before = before
+            });
         }
     }
 

@@ -29,6 +29,9 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
+builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddScoped<IAuditLogService, MongoAuditLogService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
