@@ -1,4 +1,6 @@
 ﻿using ECommerce.OrderProcessing.Application.Interfaces;
+using ECommerce.OrderProcessing.Domain.Entities;
+using ECommerce.OrderProcessing.Domain.Enums;
 using ECommerce.OrderProcessing.Infrastructure.Repositories;
 
 namespace ECommerce.OrderProcessing.Application.Services
@@ -11,6 +13,12 @@ namespace ECommerce.OrderProcessing.Application.Services
         {
             _repository = repository;
         }
+
+        public Task<Order> GetByIdAsync(long id)
+            => _repository.GetByIdAsync(id);
+
+        public Task<List<Order>> ListAsync(OrderStatus? status)
+            => _repository.ListAsync(status);
     }
 
 }
