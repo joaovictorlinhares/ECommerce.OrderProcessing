@@ -1,9 +1,33 @@
+using ECommerce.OrderProcessing.Application.Interfaces;
+using ECommerce.OrderProcessing.Application.Services;
+using ECommerce.OrderProcessing.Infrastructure.Context;
+using ECommerce.OrderProcessing.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.UseInlineDefinitionsForEnums();
+});
+
+builder.Services.AddDbContext<OrderDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("Default")
+    )
+);
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 var app = builder.Build();
 
