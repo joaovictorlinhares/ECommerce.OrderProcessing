@@ -39,6 +39,9 @@ namespace ECommerce.OrderProcessing.Application.Services
 
             order.TotalAmount = order.Items.Sum(i => i.UnitPrice * i.Quantity);
 
+            if (order.TotalAmount <= 0)
+                throw new InvalidOperationException("O pedido não pode ter valor total igual ou menor que zero.");
+
             await _repository.AddAsync(order);
             return order.Id;
         }
