@@ -61,5 +61,12 @@ namespace ECommerce.OrderProcessing.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Cancel(long id)
+        {
+            await _service.CancelAsync(id);
+            return NoContent();
+        }
     }
 }

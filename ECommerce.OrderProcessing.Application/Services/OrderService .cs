@@ -66,6 +66,16 @@ namespace ECommerce.OrderProcessing.Application.Services
 
             await _repository.UpdateAsync(order);
         }
+
+        public async Task CancelAsync(long id)
+        {
+            var order = await _repository.GetByIdAsync(id);
+
+            order.Status = OrderStatus.Cancelado;
+            order.IsActive = false;
+
+            await _repository.UpdateAsync(order);
+        }
     }
 
 }
