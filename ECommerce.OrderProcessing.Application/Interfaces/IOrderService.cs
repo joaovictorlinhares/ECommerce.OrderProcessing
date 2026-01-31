@@ -1,4 +1,5 @@
-﻿using ECommerce.OrderProcessing.Domain.Entities;
+﻿using ECommerce.OrderProcessing.Application.DTOs;
+using ECommerce.OrderProcessing.Domain.Entities;
 using ECommerce.OrderProcessing.Domain.Enums;
 
 namespace ECommerce.OrderProcessing.Application.Interfaces
@@ -7,5 +8,6 @@ namespace ECommerce.OrderProcessing.Application.Interfaces
     {
         Task<Order> GetByIdAsync(long id);
         Task<List<Order>> ListAsync(OrderStatus? status);
+        Task<long> CreateAsync(CreateOrderDto dto);
     }
 }

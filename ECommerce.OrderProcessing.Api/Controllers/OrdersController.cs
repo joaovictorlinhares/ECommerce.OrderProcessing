@@ -1,4 +1,5 @@
-﻿using ECommerce.OrderProcessing.Application.Interfaces;
+﻿using ECommerce.OrderProcessing.Application.DTOs;
+using ECommerce.OrderProcessing.Application.Interfaces;
 using ECommerce.OrderProcessing.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,5 +29,19 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> List([FromQuery] OrderStatus? status)
             => Ok(await _service.ListAsync(status));
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateOrderDto dto)
+        {
+            try
+            {
+                var id = await _service.CreateAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id }, null);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
