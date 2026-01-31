@@ -1,5 +1,6 @@
 ﻿using ECommerce.OrderProcessing.Application.DTOs;
 using ECommerce.OrderProcessing.Application.Interfaces;
+using ECommerce.OrderProcessing.Domain.Entities;
 using ECommerce.OrderProcessing.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,10 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [EndpointSummary("Obtém um pedido pelo ID")]
+        [EndpointDescription("Retorna os detalhes de um pedido existente")]
+        [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(long id)
         {
             var order = await _service.GetByIdAsync(id);
@@ -27,11 +32,18 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         }
 
         [HttpGet]
+        [EndpointSummary("Lista pedidos")]
+        [EndpointDescription("Retorna a lista de pedidos com filtro opcional por status")]
+        [ProducesResponseType(typeof(IEnumerable<Order>), StatusCodes.Status200OK)]
         public async Task<IActionResult> List([FromQuery] OrderStatus? status)
             => Ok(await _service.ListAsync(status));
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateOrderDto dto)
+        [EndpointSummary("Cria um novo pedido")]
+        [EndpointDescription("Cria um pedido e retorna o Id")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
         {
             try
             {
@@ -45,6 +57,11 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [EndpointSummary("Atualiza um pedido")]
+        [EndpointDescription("Atualiza os dados de um pedido existente")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update(long id, UpdateOrderDto dto)
         {
             try
@@ -63,6 +80,9 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [EndpointSummary("Cancela um pedido")]
+        [EndpointDescription("Realiza o cancelamento de um pedido existente")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Cancel(long id)
         {
             await _service.CancelAsync(id);
