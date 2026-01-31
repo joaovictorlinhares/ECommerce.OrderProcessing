@@ -23,12 +23,6 @@ namespace ECommerce.OrderProcessing.Application.Services
 
         public async Task<long> CreateAsync(CreateOrderDto dto)
         {
-            if (dto.Items == null || !dto.Items.Any())
-                throw new ArgumentException("O pedido deve conter ao menos um item.");
-
-            if (dto.Items.Any(i => i.UnitPrice <= 0 || i.Quantity <= 0))
-                throw new ArgumentException("Não é permitido registrar itens com valor unitário ou quantidade igual ou menor que zero.");
-
             var order = new Order
             {
                 CustomerName = dto.CustomerName,
@@ -48,6 +42,29 @@ namespace ECommerce.OrderProcessing.Application.Services
 
             await _repository.AddAsync(order);
             return order.Id;
+        }
+
+        public async Task UpdateAsync(long id, UpdateOrderDto dto)
+        {
+            var order = await _repository.GetByIdAsync(id);
+
+            if (order == null)
+                throw new KeyNotFoundException("O pedido informado não foi encontrado.");
+
+            if (order.Status != OrderStatus.Recebido)
+                throw new InvalidOperationException("Não é possível alterar um pedido já processado");
+
+            order.Items.Clear();
+            order.Items = dto.Items.Select(i => new OrderItem
+            {
+                ProductName = i.ProductName,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice
+            }).ToList();
+
+            order.TotalAmount = order.Items.Sum(i => i.UnitPrice * i.Quantity);
+
+            await _repository.UpdateAsync(order);
         }
     }
 

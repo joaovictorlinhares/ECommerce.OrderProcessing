@@ -9,5 +9,6 @@ namespace ECommerce.OrderProcessing.Application.Interfaces
         Task<Order> GetByIdAsync(long id);
         Task<List<Order>> ListAsync(OrderStatus? status);
         Task<long> CreateAsync(CreateOrderDto dto);
+        Task UpdateAsync(long id, UpdateOrderDto dto);
     }
 }
