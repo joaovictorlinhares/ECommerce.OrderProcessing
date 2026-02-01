@@ -1,7 +1,9 @@
 ﻿using ECommerce.OrderProcessing.Application.DTOs;
+using ECommerce.OrderProcessing.Application.Events;
 using ECommerce.OrderProcessing.Application.Interfaces;
 using ECommerce.OrderProcessing.Domain.Entities;
 using ECommerce.OrderProcessing.Domain.Enums;
+using ECommerce.OrderProcessing.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.OrderProcessing.Api.Controllers
@@ -43,11 +45,14 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         [EndpointDescription("Cria um pedido e retorna o Id")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateOrderDto dto, [FromServices] RabbitMqPublisher rabbitMq)
         {
             try
             {
                 var id = await _service.CreateAsync(dto);
+
+                rabbitMq.Publish(new OrderCreatedEvent { Id = id });
+
                 return CreatedAtAction(nameof(GetById), new { id }, null);
             }
             catch (ArgumentException ex)

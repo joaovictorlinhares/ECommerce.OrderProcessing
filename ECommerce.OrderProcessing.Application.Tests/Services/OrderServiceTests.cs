@@ -10,12 +10,14 @@ namespace ECommerce.OrderProcessing.Application.Tests
     public class OrderServiceTests
     {
         private readonly Mock<IOrderRepository> _repositoryMock;
+        private readonly Mock<IAuditLogService> _auditLogMock;
         private readonly OrderService _service;
 
         public OrderServiceTests()
         {
             _repositoryMock = new Mock<IOrderRepository>();
-            _service = new OrderService(_repositoryMock.Object);
+            _auditLogMock = new Mock<IAuditLogService>();
+            _service = new OrderService(_repositoryMock.Object, _auditLogMock.Object);
         }
 
         [Fact]

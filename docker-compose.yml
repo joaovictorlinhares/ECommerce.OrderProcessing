@@ -8,6 +8,7 @@ services:
     depends_on:
       - sqlserver
       - mongodb
+      - rabbitmq
     environment:
       ASPNETCORE_ENVIRONMENT: Development
 
@@ -20,6 +21,9 @@ services:
         Encrypt=False;
       MongoDb__ConnectionString: mongodb://mongodb:27017
       MongoDb__Database: OrderProcessingLogs
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: guest
+      RabbitMq__Password: guest
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-CU23-ubuntu-22.04
@@ -39,6 +43,13 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3.12.14-management
+    container_name: orderprocessing-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
 volumes:
   sql_data:

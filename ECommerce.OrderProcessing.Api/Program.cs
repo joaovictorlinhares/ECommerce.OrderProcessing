@@ -1,9 +1,10 @@
+using System.Text.Json.Serialization;
 using ECommerce.OrderProcessing.Application.Interfaces;
 using ECommerce.OrderProcessing.Application.Services;
 using ECommerce.OrderProcessing.Infrastructure.Context;
+using ECommerce.OrderProcessing.Infrastructure.Messaging;
 using ECommerce.OrderProcessing.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,9 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IAuditLogService, MongoAuditLogService>();
+
+builder.Services.AddSingleton<RabbitMqPublisher>();
+builder.Services.AddHostedService<OrderCreatedConsumer>();
 
 var app = builder.Build();
 
