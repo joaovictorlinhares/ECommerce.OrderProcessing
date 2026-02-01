@@ -23,7 +23,12 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<OrderDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("Default")
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null
+        )
     )
 );
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -33,6 +38,13 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IAuditLogService, MongoAuditLogService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {

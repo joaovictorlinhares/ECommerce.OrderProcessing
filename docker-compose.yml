@@ -1,0 +1,45 @@
+services:
+
+  api:
+    build: .
+    container_name: orderprocessing-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sqlserver
+      - mongodb
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      ConnectionStrings__DefaultConnection: >
+        Server=sqlserver;
+        Database=OrderProcessingDb;
+        User Id=sa;
+        Password=${SA_PASSWORD};
+        TrustServerCertificate=True;
+        Encrypt=False;
+      MongoDb__ConnectionString: mongodb://mongodb:27017
+      MongoDb__Database: OrderProcessingLogs
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU23-ubuntu-22.04
+    container_name: orderprocessing-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  mongodb:
+    image: mongodb/mongodb-community-server:7.0-ubi9
+    container_name: orderprocessing-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  sql_data:
+  mongo_data:
