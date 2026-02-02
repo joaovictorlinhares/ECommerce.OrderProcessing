@@ -86,6 +86,11 @@ docker compose up -d --build
   - Porta: `27017`
   - Database: `OrderProcessingLogs`
 
+  **RabbitMQ (Management UI)**  
+  👉 http://localhost:15672  
+  - Usuário: `guest`  
+  - Senha: `guest`
+
 ---
 
 ## 🧪 Testes unitários
@@ -108,11 +113,33 @@ dotnet test
 
 ---
 
+## 🔄 Mensageria e processamento assíncrono
+
+A aplicação utiliza **RabbitMQ** para desacoplar a criação do pedido do seu processamento:
+
+- Ao criar um pedido, a API publica uma mensagem em uma fila (`order-created`)
+- Um **consumer** consome essa mensagem de forma assíncrona
+- O pedido tem seu status atualizado de **Recebido** para **Processado**
+
+---
+
+## ⏱️ Processamento em background (Hangfire)
+
+Durante o consumo da mensagem, é disparado um job em background utilizando **Hangfire**, responsável por simular o envio de um e-mail de confirmação do pedido.
+
+- O envio de e-mail é apenas simulado (fake email)
+- A execução do job pode ser acompanhada através dos **logs dos containers Docker**
+
+---
+
 ## 🧠 Observações técnicas
 
 - SQL Server é utilizado apenas para dados transacionais
 - MongoDB é utilizado para **logs** e **auditoria**
 - A aplicação está preparada para rodar em ambiente containerizado com mínimo esforço
+- Foi implementado **filtro por status e paginação** na listagem de pedidos, permitindo consultas como `?status=Processado`. Caso o status não seja informado, são retornados apenas pedidos ativos
 - Foi adotada a estratégia de **Soft Delete** para a entidade **Order**, utilizando a flag `IsActive`, permitindo a desativação lógica de pedidos sem perda de histórico, o que facilita auditoria e rastreabilidade dos dados
+- O processamento de pedidos ocorre de forma **assíncrona**, utilizando **RabbitMQ**, evitando bloqueios na requisição principal
+- Jobs em background são executados com **Hangfire**, simulando o envio de e-mails e permitindo acompanhamento via logs
 
 ---
