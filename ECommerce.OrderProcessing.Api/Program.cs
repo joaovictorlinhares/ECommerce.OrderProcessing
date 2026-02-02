@@ -1,9 +1,13 @@
 using System.Text.Json.Serialization;
 using ECommerce.OrderProcessing.Application.Interfaces;
+using ECommerce.OrderProcessing.Application.Jobs;
 using ECommerce.OrderProcessing.Application.Services;
 using ECommerce.OrderProcessing.Infrastructure.Context;
 using ECommerce.OrderProcessing.Infrastructure.Messaging;
 using ECommerce.OrderProcessing.Infrastructure.Repositories;
+using ECommerce.OrderProcessing.Infrastructure.Services;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +45,16 @@ builder.Services.AddScoped<IAuditLogService, MongoAuditLogService>();
 builder.Services.AddSingleton<RabbitMqPublisher>();
 builder.Services.AddHostedService<OrderCreatedConsumer>();
 
+builder.Services.AddHangfire(config =>
+{
+    config.UseMemoryStorage();
+});
+
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<IEmailService, FakeEmailService>();
+builder.Services.AddScoped<FakeEmailJob>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -55,6 +69,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHangfireDashboard("/hangfire");
 
 app.UseHttpsRedirection();
 

@@ -2,6 +2,8 @@
 using System.Text.Json;
 using ECommerce.OrderProcessing.Application.Events;
 using ECommerce.OrderProcessing.Application.Interfaces;
+using ECommerce.OrderProcessing.Application.Jobs;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
@@ -58,7 +60,14 @@ namespace ECommerce.OrderProcessing.Infrastructure.Messaging
                         var orderService = scope.ServiceProvider
                             .GetRequiredService<IOrderService>();
 
-                        await orderService.ProcessAsync(orderEvent.Id);
+                        var order = await orderService.ProcessAsync(orderEvent.Id);
+
+                        BackgroundJob.Enqueue<FakeEmailJob>(
+                            job => job.EnviarEmailPedidoProcessado(
+                                order.Id,
+                                order.CustomerEmail
+                            )
+                        );
                     };
 
                     channel.BasicConsume(

@@ -106,13 +106,15 @@ namespace ECommerce.OrderProcessing.Application.Services
             });
         }
 
-        public async Task ProcessAsync(long id)
+        public async Task<Order> ProcessAsync(long id)
         {
             var order = await _repository.GetByIdAsync(id);
 
             order.Status = OrderStatus.Processado;
 
             await _repository.UpdateAsync(order);
+
+            return order;
         }
 
         public async Task CancelAsync(long id)
