@@ -11,6 +11,7 @@ API REST desenvolvida em **.NET 8**, seguindo os princípios da **Clean Architec
 - Entity Framework Core
 - SQL Server
 - MongoDB
+- RabbitMQ
 - Docker e Docker Compose
 - xUnit + Moq (testes unitários)
 
