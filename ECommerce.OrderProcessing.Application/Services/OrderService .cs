@@ -48,6 +48,26 @@ namespace ECommerce.OrderProcessing.Application.Services
                 throw new InvalidOperationException("O pedido não pode ter valor total igual ou menor que zero.");
 
             await _repository.AddAsync(order);
+
+            await _auditLogService.LogAsync(new OrderAuditLog
+            {
+                OrderId = order.Id,
+                CorrelationId = order.CorrelationId,
+                Action = "CREATE",
+                After = new
+                {
+                    order.Id,
+                    order.Status,
+                    order.TotalAmount,
+                    Items = order.Items.Select(i => new
+                    {
+                        i.ProductName,
+                        i.Quantity,
+                        i.UnitPrice
+                    }).ToList()
+                }
+            });
+
             return order.Id;
         }
 
