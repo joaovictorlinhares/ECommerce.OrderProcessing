@@ -31,6 +31,7 @@ namespace ECommerce.OrderProcessing.Application.Services
                 CustomerName = dto.CustomerName,
                 CustomerEmail = dto.CustomerEmail,
                 Status = OrderStatus.Recebido,
+                CorrelationId = new Guid(),
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 Items = dto.Items.Select(i => new OrderItem
@@ -101,6 +102,7 @@ namespace ECommerce.OrderProcessing.Application.Services
             await _auditLogService.LogAsync(new OrderAuditLog
             {
                 OrderId = order.Id,
+                CorrelationId = order.CorrelationId,
                 Before = before,
                 After = after
             });
@@ -142,6 +144,7 @@ namespace ECommerce.OrderProcessing.Application.Services
             {
                 Action = "SOFT DELETE",
                 OrderId = order.Id,
+                CorrelationId = order.CorrelationId,
                 Before = before
             });
         }

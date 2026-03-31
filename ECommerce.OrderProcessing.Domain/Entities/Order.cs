@@ -9,6 +9,7 @@ namespace ECommerce.OrderProcessing.Domain.Entities
         public string CustomerEmail { get; set; }
         public decimal TotalAmount { get; set; }
         public OrderStatus Status { get; set; }
+        public Guid CorrelationId { get; set; }
         public bool IsActive { get; set; }
 
         public DateTime CreatedAt { get; set; }
