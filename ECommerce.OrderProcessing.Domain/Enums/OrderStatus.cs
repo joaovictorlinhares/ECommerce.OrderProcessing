@@ -4,6 +4,8 @@
     {
         Recebido = 1,
         Processado = 2,
-        Cancelado = 3
+        Cancelado = 3,
+        EmProcessamento = 4,
+        Falha = 5
     }
 }
