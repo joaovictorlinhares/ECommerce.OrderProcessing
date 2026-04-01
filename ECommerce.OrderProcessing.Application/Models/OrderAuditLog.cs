@@ -3,7 +3,7 @@
     public class OrderAuditLog
     {
         public long OrderId { get; set; }
-        public Guid CorrelationId { get; set; }
+        public required string CorrelationId { get; set; }
         public string Action { get; set; } = "UPDATE";
         public object Before { get; set; } = default!;
         public object After { get; set; } = default!;
