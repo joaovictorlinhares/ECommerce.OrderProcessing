@@ -93,8 +93,36 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Cancel(long id)
         {
-            await _service.CancelAsync(id);
-            return NoContent();
+            try
+            {
+                await _service.CancelAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpPost("{id}/reprocessar")]
+        [EndpointSummary("Reprocessamento de pedido")]
+        [EndpointDescription("Reprocessa um pedido com status 'Falha', reenviando-o para a fila e registrando uma nova tentativa.")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ReprocessOrder(long id, [FromServices] RabbitMqPublisher rabbitMq)
+        {
+            var order = await _service.GetByIdAsync(id);
+
+            if (order == null)
+                return NotFound();
+
+            if (order.Status != OrderStatus.Falha)
+                return BadRequest("Só é permitido reprocessar pedidos com status Falha.");
+
+            rabbitMq.Publish(new OrderReprocessedEvent { Id = id });
+
+            return Ok(new { id });
         }
     }
 }

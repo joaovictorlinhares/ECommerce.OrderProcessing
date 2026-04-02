@@ -19,9 +19,12 @@ namespace ECommerce.OrderProcessing.Application.Services
             _auditLogService = auditLogService;
         }
 
-        public async Task<OrderDetailsDto> GetByIdAsync(long id)
+        public async Task<OrderDetailsDto?> GetByIdAsync(long id)
         {
             var order = await _repository.GetByIdAsync(id);
+
+            if (order == null)
+                return null;
 
             var logs = await _auditLogService.GetByOrderIdAsync(id);
 
@@ -220,6 +223,9 @@ namespace ECommerce.OrderProcessing.Application.Services
         public async Task CancelAsync(long id)
         {
             var order = await _repository.GetByIdAsync(id);
+
+            if (order == null)
+                throw new KeyNotFoundException("O pedido informado não foi encontrado.");
 
             var before = new
             {
