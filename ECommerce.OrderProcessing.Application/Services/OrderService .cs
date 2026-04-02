@@ -18,8 +18,37 @@ namespace ECommerce.OrderProcessing.Application.Services
             _auditLogService = auditLogService;
         }
 
-        public Task<Order> GetByIdAsync(long id)
-            => _repository.GetByIdAsync(id);
+        public async Task<OrderDetailsDto> GetByIdAsync(long id)
+        {
+            var order = await _repository.GetByIdAsync(id);
+
+            var logs = await _auditLogService.GetByOrderIdAsync(id);
+
+            return new OrderDetailsDto
+            {
+                Id = order.Id,
+                CustomerName = order.CustomerName,
+                CustomerEmail = order.CustomerEmail,
+                TotalAmount = order.TotalAmount,
+                Status = order.Status,
+                CorrelationId = order.CorrelationId,
+                CreatedAt = order.CreatedAt,
+
+                Items = order.Items.Select(i => new OrderItemDto
+                {
+                    ProductName = i.ProductName,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList(),
+
+                Logs = logs.Select(l => new OrderLogDto
+                {
+                    Status = l.OrderStatusAfter,
+                    CreatedAt = l.CreatedAt,
+                }).ToList()
+            };
+        }
+            
 
         public Task<List<Order>> ListAsync(OrderStatus? status, int pageNumber, int pageSize, bool sortDescending)
             => _repository.ListAsync(status, pageNumber, pageSize, sortDescending);
@@ -52,6 +81,7 @@ namespace ECommerce.OrderProcessing.Application.Services
             await _auditLogService.LogAsync(new OrderAuditLog
             {
                 OrderId = order.Id,
+                OrderStatusAfter = order.Status,
                 CorrelationId = order.CorrelationId.ToString(),
                 Action = "CREATE",
                 After = new
@@ -122,6 +152,7 @@ namespace ECommerce.OrderProcessing.Application.Services
             await _auditLogService.LogAsync(new OrderAuditLog
             {
                 OrderId = order.Id,
+                OrderStatusAfter = order.Status,
                 CorrelationId = order.CorrelationId.ToString(),
                 Before = before,
                 After = after
@@ -135,6 +166,14 @@ namespace ECommerce.OrderProcessing.Application.Services
             order.Status = OrderStatus.Processado;
 
             await _repository.UpdateAsync(order);
+
+            await _auditLogService.LogAsync(new OrderAuditLog
+            {
+                Action = "PROCESS",
+                OrderId = order.Id,
+                OrderStatusAfter = order.Status,
+                CorrelationId = order.CorrelationId.ToString(),
+            });
 
             return order;
         }
@@ -164,6 +203,7 @@ namespace ECommerce.OrderProcessing.Application.Services
             {
                 Action = "SOFT DELETE",
                 OrderId = order.Id,
+                OrderStatusAfter = order.Status,
                 CorrelationId = order.CorrelationId.ToString(),
                 Before = before
             });

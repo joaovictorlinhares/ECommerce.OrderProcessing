@@ -5,5 +5,6 @@ namespace ECommerce.OrderProcessing.Application.Interfaces
     public interface IAuditLogService
     {
         Task LogAsync(OrderAuditLog log);
+        Task<List<OrderAuditLog>> GetByOrderIdAsync(long orderId);
     }
 }

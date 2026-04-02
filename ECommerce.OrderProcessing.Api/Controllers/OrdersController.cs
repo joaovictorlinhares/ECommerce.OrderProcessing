@@ -22,7 +22,7 @@ namespace ECommerce.OrderProcessing.Api.Controllers
         [HttpGet("{id}")]
         [EndpointSummary("Obtém um pedido pelo ID")]
         [EndpointDescription("Retorna os detalhes de um pedido existente")]
-        [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(OrderDetailsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(long id)
         {
