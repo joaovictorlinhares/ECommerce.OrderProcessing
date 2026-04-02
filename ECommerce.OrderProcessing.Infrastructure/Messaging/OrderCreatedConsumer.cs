@@ -60,14 +60,17 @@ namespace ECommerce.OrderProcessing.Infrastructure.Messaging
                         var orderService = scope.ServiceProvider
                             .GetRequiredService<IOrderService>();
 
-                        var order = await orderService.ProcessAsync(orderEvent.Id);
+                        var order = await orderService.ProcessOrderAsync(orderEvent.Id);
 
-                        BackgroundJob.Enqueue<FakeEmailJob>(
-                            job => job.EnviarEmailPedidoProcessado(
-                                order.Id,
-                                order.CustomerEmail
-                            )
-                        );
+                        if (order.Status == Domain.Enums.OrderStatus.Processado)
+                        {
+                            BackgroundJob.Enqueue<FakeEmailJob>(
+                                job => job.EnviarEmailPedidoProcessado(
+                                    order.Id,
+                                    order.CustomerEmail
+                                )
+                            );
+                        }
                     };
 
                     channel.BasicConsume(

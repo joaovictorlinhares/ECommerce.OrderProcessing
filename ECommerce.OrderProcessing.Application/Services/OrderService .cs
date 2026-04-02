@@ -11,6 +11,7 @@ namespace ECommerce.OrderProcessing.Application.Services
     {
         private readonly IOrderRepository _repository;
         private readonly IAuditLogService _auditLogService;
+        private static readonly Random _random = new Random();
 
         public OrderService(IOrderRepository repository, IAuditLogService auditLogService)
         {
@@ -159,23 +160,61 @@ namespace ECommerce.OrderProcessing.Application.Services
             });
         }
 
-        public async Task<Order> ProcessAsync(long id)
+        public async Task<Order> ProcessOrderAsync(long id)
         {
             var order = await _repository.GetByIdAsync(id);
 
-            order.Status = OrderStatus.Processado;
+            if (order.Status != OrderStatus.Recebido && order.Status != OrderStatus.Falha)
+                return order;
+
+            try
+            {
+                await UpdateStatus(order, OrderStatus.EmProcessamento);
+
+                await Validate(order);
+                await Billing(order);
+
+                await UpdateStatus(order, OrderStatus.Processado);
+            }
+            catch (Exception)
+            {
+                await UpdateStatus(order, OrderStatus.Falha);
+            }
+
+            return order;
+        }
+
+        private async Task Validate(Order order)
+        {
+            await Task.Delay(300);
+
+            if (!order.Items.Any())
+                throw new Exception("Pedido inválido");
+        }
+
+        private async Task Billing(Order order)
+        {
+            await Task.Delay(300);
+
+            var numero = _random.Next(1, 4);
+
+            if (numero == 3)
+                throw new Exception("Falha no pagamento");
+        }
+
+        private async Task UpdateStatus(Order order, OrderStatus status)
+        {
+            order.Status = status;
 
             await _repository.UpdateAsync(order);
 
             await _auditLogService.LogAsync(new OrderAuditLog
             {
-                Action = "PROCESS",
                 OrderId = order.Id,
-                OrderStatusAfter = order.Status,
+                OrderStatusAfter = status,
                 CorrelationId = order.CorrelationId.ToString(),
+                Action = "STATUS_UPDATE"
             });
-
-            return order;
         }
 
         public async Task CancelAsync(long id)
