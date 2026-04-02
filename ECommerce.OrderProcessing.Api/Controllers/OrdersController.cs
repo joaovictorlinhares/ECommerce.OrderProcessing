@@ -35,10 +35,13 @@ namespace ECommerce.OrderProcessing.Api.Controllers
 
         [HttpGet]
         [EndpointSummary("Lista pedidos")]
-        [EndpointDescription("Retorna a lista de pedidos com filtro opcional por status")]
+        [EndpointDescription("Retorna a lista de pedidos com filtro opcional por status, paginação e ordenação")]
         [ProducesResponseType(typeof(IEnumerable<Order>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> List([FromQuery] OrderStatus? status)
-            => Ok(await _service.ListAsync(status));
+        public async Task<IActionResult> List([FromQuery] OrderStatus? status, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] bool sortDescending = true)
+        {
+            var orders = await _service.ListAsync(status, pageNumber, pageSize, sortDescending);
+            return Ok(orders);
+        }
 
         [HttpPost]
         [EndpointSummary("Cria um novo pedido")]

@@ -7,7 +7,7 @@ namespace ECommerce.OrderProcessing.Application.Interfaces
     public interface IOrderService
     {
         Task<Order> GetByIdAsync(long id);
-        Task<List<Order>> ListAsync(OrderStatus? status);
+        Task<List<Order>> ListAsync(OrderStatus? status, int pageNumber, int pageSize, bool sortDescending);
         Task<long> CreateAsync(CreateOrderDto dto);
         Task UpdateAsync(long id, UpdateOrderDto dto);
         Task<Order> ProcessAsync(long id);

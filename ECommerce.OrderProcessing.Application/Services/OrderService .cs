@@ -21,8 +21,8 @@ namespace ECommerce.OrderProcessing.Application.Services
         public Task<Order> GetByIdAsync(long id)
             => _repository.GetByIdAsync(id);
 
-        public Task<List<Order>> ListAsync(OrderStatus? status)
-            => _repository.ListAsync(status);
+        public Task<List<Order>> ListAsync(OrderStatus? status, int pageNumber, int pageSize, bool sortDescending)
+            => _repository.ListAsync(status, pageNumber, pageSize, sortDescending);
 
         public async Task<long> CreateAsync(CreateOrderDto dto)
         {

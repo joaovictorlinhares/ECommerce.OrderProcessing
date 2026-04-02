@@ -26,7 +26,7 @@ namespace ECommerce.OrderProcessing.Infrastructure.Repositories
                 .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == id && o.IsActive);
 
-        public async Task<List<Order>> ListAsync(OrderStatus? status)
+        public async Task<List<Order>> ListAsync(OrderStatus? status, int pageNumber, int pageSize, bool sortDescending)
         {
             var query = _context.Orders
                 .Include(o => o.Items)
@@ -34,6 +34,14 @@ namespace ECommerce.OrderProcessing.Infrastructure.Repositories
 
             if (status.HasValue)
                 query = query.Where(o => o.Status == status);
+
+            query = sortDescending
+                ? query.OrderByDescending(o => o.CreatedAt)
+                : query.OrderBy(o => o.CreatedAt);
+
+            query = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
 
             return await query.ToListAsync();
         }
